@@ -1,7 +1,8 @@
 #include "GameViewModel.h"
 
 GameViewModel::GameViewModel()
-    : _score(0), _isGameOver(false), _distanceTraveled(0.0f)
+    : _score(0), _isGameOver(false), _distanceTraveled(0.0f),
+      _goldenAssistFrames(0)
 {
 }
 
@@ -19,31 +20,54 @@ void GameViewModel::update(float dt)
     return;
 
   // 1. 驱动 Model 层进行物理和滚动计算
+  if (_goldenAssistFrames > 0)
+  {
+    _player.vx = std::max(_player.vx, 260.0f);
+    _player.vy = std::min(_player.vy, -80.0f);
+    --_goldenAssistFrames;
+  }
+
   _player.applyPhysics(dt);
   _leafManager.update(dt);
 
   // 2. 碰撞检测与逻辑结算
-  const auto &leaves = _leafManager.getLeaves();
+  auto &leaves = _leafManager.getMutableLeaves();
   bool onGround = false;
+  bool attachedToLeaf = false;
 
-  for (const auto &leaf : leaves)
+  for (auto &leaf : leaves)
   {
     // 脚底接触判定：如果踩在叶子上，可以恢复跳跃状态
     if (_collisionDetector.isOnGround(_player, leaf))
     {
       onGround = true;
-      // TODO: 如果是深色叶子，触发破碎倒计时
-      // TODO: 如果是金叶子/四叶草，触发特殊效果
+      _player.landOn(leaf.y);
+
+      if (!leaf.effectTriggered)
+      {
+        if (leaf.isDark())
+        {
+          leaf.startBreakCountdown(0.45f);
+        }
+        else if (leaf.isGolden())
+        {
+          _goldenAssistFrames = 33;
+          leaf.effectTriggered = true;
+          notifyPropertyChanged("GoldenAssist");
+        }
+      }
       break;
     }
 
-    // 抓取判定：如果在抓取状态且产生碰撞，则悬挂减速
+    // 抓取判定：如果在抓取状态且产生碰撞，则免疫重力
     if (_player.isGrabbing && _collisionDetector.checkCollision(_player, leaf))
     {
-      _player.vy *= 0.5f; // 简单的悬挂减速逻辑
-      break;
+      _player.vy = 0.0f;     // 强制当前 Y 方向速度归零
+      attachedToLeaf = true; // 标记本帧成功抓取
+      break;                 // 找到一个落脚点即可跳出循环
     }
   }
+  _player.isHanging = attachedToLeaf;
 
   // 3. 计分逻辑：根据玩家水平前进距离动态加分
   if (_player.vx > 0)
@@ -72,21 +96,22 @@ void GameViewModel::update(float dt)
 // --- 给 Command 调用的行为 ---
 void GameViewModel::jump()
 {
-  _player.jump(); // 内部会设置 vy = -JUMP_SPEED
+  _player.jump();
+  _player.isGrabbing = false; // 立刻解除按键抓取意图，防止下一帧瞬间重新吸附
+  _player.isHanging = false;
 }
 
 void GameViewModel::moveLeft()
 {
-  _player.vx = -200.0f; // 假设移动速度，实际应调用 Model 的方法
+  _player.moveLeft();
 }
 
 void GameViewModel::moveRight()
 {
-  _player.vx = 200.0f;
+  _player.moveRight();
 }
 
 void GameViewModel::grab()
 {
-  // 开启抓取状态，后续在 update 中通过 CollisionDetector 判定是否生效
   _player.grab();
 }
