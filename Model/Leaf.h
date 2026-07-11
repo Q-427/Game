@@ -53,6 +53,7 @@ private:
     void update(float dt,float scrollSpeed) noexcept; //叶子自身的帧更新
 
     LeafEffect onPlayerLanded() noexcept; //当玩家踩中这片叶子时，GameModel 调用此方法
+    void moveHorizontal(float distance) noexcept;
 
     friend class GameModel;
     friend class LeafManager;

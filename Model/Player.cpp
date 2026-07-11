@@ -41,9 +41,13 @@ void Player::stopMoving() noexcept
 
 void Player::jump() noexcept
 {
-    if(!grounded && !hanging)
-        return ;
-    velocityY = -JumpSpeed; //负值表初速度向上
+    if (jumpCount >= MaxJumpCount)
+    {
+        return;
+    }
+
+    ++jumpCount;
+    velocityY = -JumpSpeed;
     grounded = false;
     hanging = false;
     grabRequested = false;
@@ -63,6 +67,7 @@ void Player::landOn(float platformTop) noexcept
     velocityY = 0.0f;
     grounded = true;
     hanging = false;
+    jumpCount = 0;
 }
 
 void Player::setHanging(bool value) noexcept
@@ -79,8 +84,10 @@ void Player::setHanging(bool value) noexcept
 void Player::activateGoldenBoost(float duration) noexcept
 {
     goldenBoostRemaining = std::max(goldenBoostRemaining, duration);
-    velocityX = GoldenMoveSpeed;
+    velocityX = 0.0f;
 }
+
+void Player::moveHorizontal(float distance) noexcept { xPosition += distance; }
 
 void Player::constrainX(float minimum, float maximum) noexcept
 {

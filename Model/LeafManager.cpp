@@ -17,12 +17,15 @@ LeafManager::LeafManager(float screenWidth,float scrollSpeed,float initialPlatfo
 
 void LeafManager::createInitialLeaves()
 {
-    //在玩家起点右侧生成三片普通叶子
-    leaves.emplace_back(LeafType::Normal,initialPlatformX,initialPlatformY);
-    leaves.emplace_back(LeafType::Normal,initialPlatformX + 220.0f,initialPlatformY - 85.0f);
-    leaves.emplace_back(LeafType::Normal,initialPlatformX + 440.0f,initialPlatformY - 170.0f);
-    //记录最后一片叶子的 Y 坐标
-    lastSpawnY = initialPlatformY - 170.0f;
+    //在玩家起点右侧生成6片叶子
+    leaves.emplace_back(LeafType::Normal, initialPlatformX, initialPlatformY);
+    leaves.emplace_back(LeafType::Normal, initialPlatformX + 190.0f, initialPlatformY - 36.0f);
+    leaves.emplace_back(LeafType::Normal, initialPlatformX + 380.0f, initialPlatformY - 68.0f);
+    leaves.emplace_back(LeafType::Dark, initialPlatformX + 580.0f, initialPlatformY - 26.0f);
+    leaves.emplace_back(LeafType::Normal, initialPlatformX + 790.0f, initialPlatformY - 74.0f);
+    leaves.emplace_back(LeafType::Golden, initialPlatformX + 1010.0f, initialPlatformY - 38.0f);
+    //记录最后一片叶子的坐标
+    lastSpawnY = initialPlatformY - 38.0f;
 }
 
 void LeafManager::update(float dt)

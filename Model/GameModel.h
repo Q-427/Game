@@ -47,6 +47,8 @@ private:
     static constexpr float MaximumLeafBottomMargin =110.0f;
     static constexpr float LeafScrollSpeed = 95.0f;
     static constexpr float GoldenBoostDuration = 0.8f;
+    static constexpr float GoldenCarrySpeed = 320.0f;
+    static constexpr float GoldenCarryDistance = 240.0f;
     static constexpr int GoldenLeafBonus = 50;
 
     float screenWidth;
@@ -59,12 +61,14 @@ private:
     float survivalTime{0.0f};
     int survivalScore{0};
     int bonusScore{0};
+    float goldenCarryDistanceRemaining{0.0f};
     bool gameOver{false};
 
     std::vector<GameEvent> events;
 
-    void resolveLeafInteractions(); //碰撞处理逻辑
+    void resolveLeafInteractions(float dt); //碰撞处理逻辑
     void applyLeafEffect(LeafEffect effect); //根据叶子返回的效果码，执行对应的游戏规则
+    void updateGoldenCarry(Leaf& leaf, float dt);
     void updateScore(float dt);
     void endGame();
 };

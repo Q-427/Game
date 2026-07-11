@@ -41,6 +41,8 @@ LeafEffect Leaf::onPlayerLanded() noexcept
     }
 }
 
+void Leaf::moveHorizontal(float distance) noexcept { xPosition += distance; }
+
 LeafType Leaf::getType() const noexcept { return type; }
 float Leaf::getX() const noexcept { return xPosition; }
 float Leaf::getY() const noexcept { return yPosition; }

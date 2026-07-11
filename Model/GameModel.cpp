@@ -1,5 +1,7 @@
 #include "GameModel.h"
 
+#include <algorithm>
+
 GameModel::GameModel(float screenWidth,float screenHeight)
     : screenWidth(screenWidth),
       screenHeight(screenHeight),
@@ -16,17 +18,18 @@ void GameModel::update(float dt)
         return;
     player.update(dt);
     leafManager.update(dt);
+    resolveLeafInteractions(dt);
     player.constrainX(0.0f,screenWidth - Player::CollisionWidth);
-    resolveLeafInteractions();
     updateScore(dt);
 
     if (player.getY() > screenHeight)
         endGame();//玩家掉出屏幕底部，游戏结束
 }
 
-void GameModel::resolveLeafInteractions()
+void GameModel::resolveLeafInteractions(float dt)
 {
     bool attachedToLeaf = false;
+    bool standingOnGoldenLeaf = false;
 
     for (Leaf& leaf : leafManager.getMutableLeaves()) //遍历所有叶子
     {
@@ -34,17 +37,29 @@ void GameModel::resolveLeafInteractions()
         if (collisionDetector.isLanding(player,leaf))
         {
             player.landOn(leaf.getY());
+            player.moveHorizontal(-LeafScrollSpeed * dt);
             const LeafEffect effect = leaf.onPlayerLanded();
             applyLeafEffect(effect);
+
+            if (leaf.getType() == LeafType::Golden && goldenCarryDistanceRemaining > 0.0f)
+            {
+                standingOnGoldenLeaf = true;
+                updateGoldenCarry(leaf,dt);
+            }
             break;
         }
 
         if (player.isGrabRequested() && collisionDetector.canGrab(player,leaf))
         {
+            player.moveHorizontal(-LeafScrollSpeed * dt);
             attachedToLeaf = true;
             break;
         }
     }
+
+    if (!standingOnGoldenLeaf)
+        goldenCarryDistanceRemaining = 0.0f;
+
     player.setHanging(attachedToLeaf);
 }
 
@@ -58,6 +73,7 @@ void GameModel::applyLeafEffect(LeafEffect effect)
 
     case LeafEffect::GoldenBoostActivated:
         player.activateGoldenBoost(GoldenBoostDuration);
+        goldenCarryDistanceRemaining = GoldenCarryDistance;
         bonusScore += GoldenLeafBonus;
         events.push_back({GameEventType::GoldenBoostStarted,GoldenLeafBonus});
         events.push_back({GameEventType::ScoreChanged,getScore()});
@@ -66,6 +82,18 @@ void GameModel::applyLeafEffect(LeafEffect effect)
     case LeafEffect::None:
         break;
     }
+}
+
+void GameModel::updateGoldenCarry(Leaf& leaf,float dt)
+{
+    player.stopMoving();
+    const float carryDelta = std::min(GoldenCarrySpeed * dt,goldenCarryDistanceRemaining);
+    leaf.moveHorizontal(carryDelta);
+    player.moveHorizontal(carryDelta);
+    goldenCarryDistanceRemaining -= carryDelta;
+
+    if (goldenCarryDistanceRemaining <= 0.0f)
+        goldenCarryDistanceRemaining = 0.0f;
 }
 
 void GameModel::updateScore(float dt)
@@ -87,20 +115,33 @@ void GameModel::endGame()
 
 void GameModel::jump() noexcept
 {
-    if (!gameOver)
-        player.jump();
+    if (gameOver)
+        return;
+
+    goldenCarryDistanceRemaining = 0.0f;
+    player.jump();
 }
 
 void GameModel::moveLeft() noexcept
 {
-    if (!gameOver)
-        player.moveLeft();
+    if (gameOver || goldenCarryDistanceRemaining > 0.0f)
+    {
+        player.stopMoving();
+        return;
+    }
+
+    player.moveLeft();
 }
 
 void GameModel::moveRight() noexcept
 {
-    if (!gameOver)
-        player.moveRight();
+    if (gameOver || goldenCarryDistanceRemaining > 0.0f)
+    {
+        player.stopMoving();
+        return;
+    }
+
+    player.moveRight();
 }
 
 void GameModel::stopMoving() noexcept
