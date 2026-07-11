@@ -49,7 +49,6 @@ private:
     static constexpr float GoldenBoostDuration = 0.8f;
     static constexpr float GoldenCarrySpeed = 320.0f;
     static constexpr float GoldenCarryDistance = 240.0f;
-    static constexpr int GoldenLeafBonus = 50;
 
     float screenWidth;
     float screenHeight;
@@ -60,7 +59,8 @@ private:
 
     float survivalTime{0.0f};
     int survivalScore{0};
-    int bonusScore{0};
+    float goldenBonusTime{0.0f};
+    int goldenBonusScore{0};
     float goldenCarryDistanceRemaining{0.0f};
     bool gameOver{false};
 

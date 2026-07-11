@@ -74,9 +74,7 @@ void GameModel::applyLeafEffect(LeafEffect effect)
     case LeafEffect::GoldenBoostActivated:
         player.activateGoldenBoost(GoldenBoostDuration);
         goldenCarryDistanceRemaining = GoldenCarryDistance;
-        bonusScore += GoldenLeafBonus;
-        events.push_back({GameEventType::GoldenBoostStarted,GoldenLeafBonus});
-        events.push_back({GameEventType::ScoreChanged,getScore()});
+        events.push_back({GameEventType::GoldenBoostStarted,0});
         break;
 
     case LeafEffect::None:
@@ -100,7 +98,14 @@ void GameModel::updateScore(float dt)
 {
     const int previousScore = getScore();
     survivalTime += dt;
-    survivalScore =static_cast<int>(survivalTime * 10.0f); //每秒+10分
+    survivalScore = static_cast<int>(survivalTime); //每生存1秒加1分
+
+    if (goldenCarryDistanceRemaining > 0.0f)
+    {
+        goldenBonusTime += dt;
+        goldenBonusScore = static_cast<int>(goldenBonusTime * 10.0f); //携带期间每秒额外加10分
+    }
+
     if (getScore() != previousScore)
         events.push_back({GameEventType::ScoreChanged,getScore()});
 }
@@ -168,7 +173,7 @@ const std::vector<Leaf>& GameModel::getLeaves() const noexcept
 
 int GameModel::getScore() const noexcept
 {
-    return survivalScore + bonusScore;
+    return survivalScore + goldenBonusScore;
 }
 
 bool GameModel::isGameOver() const noexcept
