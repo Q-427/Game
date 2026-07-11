@@ -1,5 +1,7 @@
 #include "GameModel.h"
 
+#include <algorithm>
+
 GameModel::GameModel(float screenWidth,float screenHeight)
     : screenWidth(screenWidth),
       screenHeight(screenHeight),
@@ -16,17 +18,25 @@ void GameModel::update(float dt)
         return;
     player.update(dt);
     leafManager.update(dt);
+    resolveLeafInteractions(dt);
     player.constrainX(0.0f,screenWidth - Player::CollisionWidth);
-    resolveLeafInteractions();
     updateScore(dt);
 
     if (player.getY() > screenHeight)
         endGame();//玩家掉出屏幕底部，游戏结束
 }
 
-void GameModel::resolveLeafInteractions()
+void GameModel::reset()
+{
+    const float width = screenWidth;
+    const float height = screenHeight;
+    *this = GameModel(width, height);
+}
+
+void GameModel::resolveLeafInteractions(float dt)
 {
     bool attachedToLeaf = false;
+    bool standingOnGoldenLeaf = false;
 
     for (Leaf& leaf : leafManager.getMutableLeaves()) //遍历所有叶子
     {
@@ -34,17 +44,29 @@ void GameModel::resolveLeafInteractions()
         if (collisionDetector.isLanding(player,leaf))
         {
             player.landOn(leaf.getY());
+            player.moveHorizontal(-LeafScrollSpeed * dt);
             const LeafEffect effect = leaf.onPlayerLanded();
             applyLeafEffect(effect);
+
+            if (leaf.getType() == LeafType::Golden && goldenCarryDistanceRemaining > 0.0f)
+            {
+                standingOnGoldenLeaf = true;
+                updateGoldenCarry(leaf,dt);
+            }
             break;
         }
 
         if (player.isGrabRequested() && collisionDetector.canGrab(player,leaf))
         {
+            player.moveHorizontal(-LeafScrollSpeed * dt);
             attachedToLeaf = true;
             break;
         }
     }
+
+    if (!standingOnGoldenLeaf)
+        goldenCarryDistanceRemaining = 0.0f;
+
     player.setHanging(attachedToLeaf);
 }
 
@@ -57,10 +79,9 @@ void GameModel::applyLeafEffect(LeafEffect effect)
         break;
 
     case LeafEffect::GoldenBoostActivated:
-        player.activateGoldenBoost(GoldenBoostDuration);
-        bonusScore += GoldenLeafBonus;
-        events.push_back({GameEventType::GoldenBoostStarted,GoldenLeafBonus});
-        events.push_back({GameEventType::ScoreChanged,getScore()});
+        player.activateGoldenBoost(GoldenEffectDuration);
+        goldenCarryDistanceRemaining = GoldenCarryDistance;
+        events.push_back({GameEventType::GoldenBoostStarted,0});
         break;
 
     case LeafEffect::None:
@@ -68,11 +89,30 @@ void GameModel::applyLeafEffect(LeafEffect effect)
     }
 }
 
+void GameModel::updateGoldenCarry(Leaf& leaf,float dt)
+{
+    player.stopMoving();
+    const float carryDelta = std::min(GoldenCarrySpeed * dt,goldenCarryDistanceRemaining);
+    leaf.moveHorizontal(carryDelta);
+    player.moveHorizontal(carryDelta);
+    goldenCarryDistanceRemaining -= carryDelta;
+
+    if (goldenCarryDistanceRemaining <= 0.0f)
+        goldenCarryDistanceRemaining = 0.0f;
+}
+
 void GameModel::updateScore(float dt)
 {
     const int previousScore = getScore();
     survivalTime += dt;
-    survivalScore =static_cast<int>(survivalTime * 10.0f); //每秒+10分
+    survivalScore = static_cast<int>(survivalTime); //每生存1秒加1分
+
+    if (goldenCarryDistanceRemaining > 0.0f)
+    {
+        goldenBonusTime += dt;
+        goldenBonusScore = static_cast<int>(goldenBonusTime * 10.0f); //携带期间每秒额外加10分
+    }
+
     if (getScore() != previousScore)
         events.push_back({GameEventType::ScoreChanged,getScore()});
 }
@@ -87,20 +127,33 @@ void GameModel::endGame()
 
 void GameModel::jump() noexcept
 {
-    if (!gameOver)
-        player.jump();
+    if (gameOver)
+        return;
+
+    goldenCarryDistanceRemaining = 0.0f;
+    player.jump();
 }
 
 void GameModel::moveLeft() noexcept
 {
-    if (!gameOver)
-        player.moveLeft();
+    if (gameOver || goldenCarryDistanceRemaining > 0.0f)
+    {
+        player.stopMoving();
+        return;
+    }
+
+    player.moveLeft();
 }
 
 void GameModel::moveRight() noexcept
 {
-    if (!gameOver)
-        player.moveRight();
+    if (gameOver || goldenCarryDistanceRemaining > 0.0f)
+    {
+        player.stopMoving();
+        return;
+    }
+
+    player.moveRight();
 }
 
 void GameModel::stopMoving() noexcept
@@ -127,7 +180,7 @@ const std::vector<Leaf>& GameModel::getLeaves() const noexcept
 
 int GameModel::getScore() const noexcept
 {
-    return survivalScore + bonusScore;
+    return survivalScore + goldenBonusScore;
 }
 
 bool GameModel::isGameOver() const noexcept

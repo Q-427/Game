@@ -33,6 +33,7 @@ private:
     static constexpr float GoldenMoveSpeed = 320.0f; //碰到金叶子后的速度
     static constexpr float JumpSpeed = 440.0f; //起跳的初速度
     static constexpr float MaxFallSpeed = 700.0f; //下落速度上线，防止穿透物体
+    static constexpr int MaxJumpCount = 2;
 
     float xPosition;
     float yPosition; //玩家顶部坐标（y轴向下为正）
@@ -40,6 +41,7 @@ private:
     float velocityX{0.0f};
     float velocityY{0.0f};
     float goldenBoostRemaining{0.0f}; //金叶子冲刺剩余时间
+    int jumpCount{0};
 
     bool grounded{false};
     bool grabRequested{false};
@@ -54,6 +56,7 @@ private:
     void landOn(float platformTop) noexcept; //玩家踩到叶子后调用
     void setHanging(bool value) noexcept; //抓取成功时调用此方法
     void activateGoldenBoost(float duration) noexcept;
+    void moveHorizontal(float distance) noexcept;
     void constrainX(float minimum, float maximum) noexcept; //将玩家坐标约束在合法范围内，防止超出屏幕边界
 
     friend class GameModel;
