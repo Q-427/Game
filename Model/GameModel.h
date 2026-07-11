@@ -26,6 +26,7 @@ public:
     GameModel(float screenWidth,float screenHeight);
 
     void update(float dt);
+    void reset(); //重新开始
     //玩家控制命令接口
     void jump() noexcept;
     void moveLeft() noexcept;
@@ -46,9 +47,9 @@ private:
     static constexpr float MinimumLeafY = 180.0f;
     static constexpr float MaximumLeafBottomMargin =110.0f;
     static constexpr float LeafScrollSpeed = 95.0f;
-    static constexpr float GoldenBoostDuration = 0.8f;
+    static constexpr float GoldenEffectDuration = 4.0f;
     static constexpr float GoldenCarrySpeed = 320.0f;
-    static constexpr float GoldenCarryDistance = 240.0f;
+    static constexpr float GoldenCarryDistance = GoldenCarrySpeed * GoldenEffectDuration;
 
     float screenWidth;
     float screenHeight;

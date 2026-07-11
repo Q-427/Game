@@ -26,6 +26,13 @@ void GameModel::update(float dt)
         endGame();//玩家掉出屏幕底部，游戏结束
 }
 
+void GameModel::reset()
+{
+    const float width = screenWidth;
+    const float height = screenHeight;
+    *this = GameModel(width, height);
+}
+
 void GameModel::resolveLeafInteractions(float dt)
 {
     bool attachedToLeaf = false;
@@ -72,7 +79,7 @@ void GameModel::applyLeafEffect(LeafEffect effect)
         break;
 
     case LeafEffect::GoldenBoostActivated:
-        player.activateGoldenBoost(GoldenBoostDuration);
+        player.activateGoldenBoost(GoldenEffectDuration);
         goldenCarryDistanceRemaining = GoldenCarryDistance;
         events.push_back({GameEventType::GoldenBoostStarted,0});
         break;
