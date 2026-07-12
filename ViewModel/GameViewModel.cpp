@@ -25,6 +25,7 @@ const std::vector<LeafViewData> &GameViewModel::getLeaves() const
 
 int GameViewModel::getScore() const { return _model.getScore(); }
 bool GameViewModel::isGameOver() const { return _model.isGameOver(); }
+bool GameViewModel::isPlayerClimbing() const { return _model.getPlayer().isHanging(); }
 
 // --- 核心逻辑驱动 ---
 void GameViewModel::update(float dt)
@@ -100,3 +101,4 @@ void GameViewModel::moveRight() { _model.moveRight(); }
 void GameViewModel::stopHorizontal() { _model.stopMoving(); }
 void GameViewModel::startGrab() { _model.setGrabRequested(true); }
 void GameViewModel::stopGrab() { _model.setGrabRequested(false); }
+void GameViewModel::restart() { _model.reset(); }
