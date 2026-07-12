@@ -11,33 +11,15 @@
 #include "../ViewModel/GameViewModel.h"
 
 GameRenderer::GameRenderer()
-    : m_skyTopColor(146, 214, 255)
-    , m_skyBottomColor(247, 237, 197)
-    , m_groundColor(88, 132, 84)
-    , m_hillBackColor(165, 204, 170)
-    , m_hillFrontColor(119, 164, 114)
-    , m_canopyColor(63, 109, 68)
-    , m_playerBodyColor(234, 155, 128)
-    , m_playerScarfColor(230, 90, 72)
-    , m_playerHeadColor(255, 227, 198)
-    , m_hasLayeredBackground(false)
-    , m_hasPlayerTextures(false)
-    , m_hasLeafTextures(false)
-    , m_backgroundScroll(0.0f)
-    , m_backgroundBaseSpeed(45.0f)
-    , m_groundHeight(80.0f)
-    , m_playerDrawWidth(60.0f)
-    , m_playerDrawHeight(70.0f)
-    , m_playerClimbScale(1.16f)
-    , m_leafDrawSize(148.0f)
+    : m_skyTopColor(146, 214, 255), m_skyBottomColor(247, 237, 197), m_groundColor(88, 132, 84), m_hillBackColor(165, 204, 170), m_hillFrontColor(119, 164, 114), m_canopyColor(63, 109, 68), m_playerBodyColor(234, 155, 128), m_playerScarfColor(230, 90, 72), m_playerHeadColor(255, 227, 198), m_hasLayeredBackground(false), m_hasPlayerTextures(false), m_hasLeafTextures(false), m_backgroundScroll(0.0f), m_backgroundBaseSpeed(45.0f), m_groundHeight(80.0f), m_playerDrawWidth(60.0f), m_playerDrawHeight(70.0f), m_playerClimbScale(1.16f), m_leafDrawSize(148.0f)
 {
 }
 
 bool GameRenderer::initialize()
 {
-    const std::filesystem::path basePath("asserts/backgrounds/mountains_parallax");
-    const std::filesystem::path playerPath("asserts/characters/cats");
-    const std::filesystem::path leafPath("asserts/platforms/leaves");
+    const std::filesystem::path basePath("assets/backgrounds/mountains_parallax");
+    const std::filesystem::path playerPath("assets/characters/cats");
+    const std::filesystem::path leafPath("assets/platforms/leaves");
 
     const bool hasBase = m_backgroundTexture.loadFromFile(basePath / "background.png");
     const bool hasCloudsBig = m_cloudsBigTexture.loadFromFile(basePath / "clouds_big.png");
@@ -70,7 +52,7 @@ bool GameRenderer::initialize()
     return true;
 }
 
-void GameRenderer::render(sf::RenderWindow& window, const GameViewModel& viewModel, float deltaTime)
+void GameRenderer::render(sf::RenderWindow &window, const GameViewModel &viewModel, float deltaTime)
 {
     updateBackgroundScroll(deltaTime);
     drawBackground(window);
@@ -88,7 +70,7 @@ void GameRenderer::updateBackgroundScroll(float deltaTime)
     m_backgroundScroll += m_backgroundBaseSpeed * deltaTime;
 }
 
-void GameRenderer::drawBackground(sf::RenderWindow& window) const
+void GameRenderer::drawBackground(sf::RenderWindow &window) const
 {
     if (m_hasLayeredBackground)
     {
@@ -105,8 +87,8 @@ void GameRenderer::drawBackground(sf::RenderWindow& window) const
 }
 
 void GameRenderer::drawBackgroundLayer(
-    sf::RenderWindow& window,
-    const sf::Texture& texture,
+    sf::RenderWindow &window,
+    const sf::Texture &texture,
     float yOffset,
     float scrollFactor,
     sf::Color tint) const
@@ -138,7 +120,7 @@ void GameRenderer::drawBackgroundLayer(
     }
 }
 
-void GameRenderer::drawDistantHills(sf::RenderWindow& window) const
+void GameRenderer::drawDistantHills(sf::RenderWindow &window) const
 {
     const float width = static_cast<float>(window.getSize().x);
     const float height = static_cast<float>(window.getSize().y);
@@ -166,7 +148,7 @@ void GameRenderer::drawDistantHills(sf::RenderWindow& window) const
     window.draw(frontHill);
 }
 
-void GameRenderer::drawCanopy(sf::RenderWindow& window) const
+void GameRenderer::drawCanopy(sf::RenderWindow &window) const
 {
     const float width = static_cast<float>(window.getSize().x);
 
@@ -184,7 +166,7 @@ void GameRenderer::drawCanopy(sf::RenderWindow& window) const
     }
 }
 
-void GameRenderer::drawGround(sf::RenderWindow& window) const
+void GameRenderer::drawGround(sf::RenderWindow &window) const
 {
     const float width = static_cast<float>(window.getSize().x);
     const float top = static_cast<float>(window.getSize().y) - m_groundHeight;
@@ -210,21 +192,21 @@ void GameRenderer::drawGround(sf::RenderWindow& window) const
     }
 }
 
-void GameRenderer::drawLeaves(sf::RenderWindow& window, const GameViewModel& viewModel) const
+void GameRenderer::drawLeaves(sf::RenderWindow &window, const GameViewModel &viewModel) const
 {
-    const auto& leaves = viewModel.getLeaves();
+    const auto &leaves = viewModel.getLeaves();
 
-    for (const auto& leaf : leaves)
+    for (const auto &leaf : leaves)
     {
         drawLeafShape(window, leaf);
     }
 }
 
-void GameRenderer::drawLeafShape(sf::RenderWindow& window, const LeafViewData& leaf) const
+void GameRenderer::drawLeafShape(sf::RenderWindow &window, const LeafViewData &leaf) const
 {
     if (m_hasLeafTextures)
     {
-        const sf::Texture* texture = &m_leafNormalTexture;
+        const sf::Texture *texture = &m_leafNormalTexture;
         if (leaf.type == LeafViewType::Dark)
         {
             texture = &m_leafDarkTexture;
@@ -323,7 +305,7 @@ void GameRenderer::drawLeafShape(sf::RenderWindow& window, const LeafViewData& l
         sf::Vector2f(center.x - horizontalOffset, center.y + verticalOffset),
         sf::Vector2f(center.x + horizontalOffset, center.y + verticalOffset)};
 
-    for (const auto& petalCenter : petalCenters)
+    for (const auto &petalCenter : petalCenters)
     {
         sf::CircleShape petal(petalRadius, 48);
         petal.setOrigin(sf::Vector2f(petalRadius, petalRadius));
@@ -371,7 +353,7 @@ void GameRenderer::drawLeafShape(sf::RenderWindow& window, const LeafViewData& l
         cracks[1].setRotation(sf::degrees(28.0f));
         cracks[2].setRotation(sf::degrees(-48.0f));
 
-        for (auto& crack : cracks)
+        for (auto &crack : cracks)
         {
             crack.setFillColor(sf::Color(28, 38, 36, 210));
             window.draw(crack);
@@ -379,7 +361,7 @@ void GameRenderer::drawLeafShape(sf::RenderWindow& window, const LeafViewData& l
     }
 }
 
-void GameRenderer::drawLeafVeins(sf::RenderWindow& window, const LeafViewData& leaf, sf::Color veinColor) const
+void GameRenderer::drawLeafVeins(sf::RenderWindow &window, const LeafViewData &leaf, sf::Color veinColor) const
 {
     const float width = leaf.width;
     const float height = leaf.height;
@@ -391,7 +373,7 @@ void GameRenderer::drawLeafVeins(sf::RenderWindow& window, const LeafViewData& l
         sf::Vector2f(center.x - width * 0.13f, center.y + height * 0.33f),
         sf::Vector2f(center.x + width * 0.13f, center.y + height * 0.33f)};
 
-    for (const auto& end : ends)
+    for (const auto &end : ends)
     {
         sf::VertexArray line(sf::PrimitiveType::Lines, 2);
         line[0].position = center;
@@ -402,7 +384,7 @@ void GameRenderer::drawLeafVeins(sf::RenderWindow& window, const LeafViewData& l
     }
 }
 
-void GameRenderer::drawGoldenGlow(sf::RenderWindow& window, const LeafViewData& leaf) const
+void GameRenderer::drawGoldenGlow(sf::RenderWindow &window, const LeafViewData &leaf) const
 {
     const sf::Vector2f center(leaf.x + leaf.width * 0.52f, leaf.y + leaf.height * 0.48f);
 
@@ -429,13 +411,13 @@ void GameRenderer::drawGoldenGlow(sf::RenderWindow& window, const LeafViewData& 
     }
 }
 
-void GameRenderer::drawPlayer(sf::RenderWindow& window, const GameViewModel& viewModel) const
+void GameRenderer::drawPlayer(sf::RenderWindow &window, const GameViewModel &viewModel) const
 {
     const sf::Vector2f center(viewModel.getPlayerCenterX(), viewModel.getPlayerCenterY());
 
     if (m_hasPlayerTextures)
     {
-        const sf::Texture* texture = nullptr;
+        const sf::Texture *texture = nullptr;
         bool useClimbTexture = false;
         const bool hasWalkTexture =
             m_playerWalkTexture.getSize().x > 0 && m_playerWalkTexture.getSize().y > 0;

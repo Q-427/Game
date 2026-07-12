@@ -33,6 +33,7 @@ public:
   const std::vector<LeafViewData> &getLeaves() const; // 【修改】返回 View 专用结构
   int getScore() const;
   bool isGameOver() const;
+  bool isPlayerClimbing() const; // 玩家是否处于抓取/攀爬状态
 
   // === 核心驱动 ===
   void update(float dt);
@@ -44,6 +45,7 @@ public:
   void stopHorizontal(); // 【新增】停止水平移动
   void startGrab();      // 【新增】按下抓取
   void stopGrab();       // 【新增】松开抓取
+  void restart();        // 【新增】重新开始游戏
 
 private:
   // Model 层唯一入口 (接管了所有游戏规则)

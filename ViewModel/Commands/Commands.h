@@ -91,3 +91,18 @@ public:
       _vm->stopGrab();
   }
 };
+
+// 【新增】重新开始命令 (用于 R 键)
+class RestartCommand : public ICommand
+{
+private:
+  GameViewModel *_vm;
+
+public:
+  RestartCommand(GameViewModel *vm) : _vm(vm) {}
+  void execute() override
+  {
+    if (_vm)
+      _vm->restart();
+  }
+};
