@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../Common/MathUtils.h"
-
 enum class LeafType
 {
     Normal,
@@ -17,7 +15,9 @@ enum class LeafEffect
 };
 
 class GameModel;
+class CollisionDetector;
 class LeafManager;
+struct Rect;
 
 class Leaf
 {
@@ -37,9 +37,6 @@ public:
     bool isExpired() const noexcept; //叶子是否死亡（移除屏幕或被击碎）
     bool hasTriggeredEffect() const noexcept; //确保“金叶子加速”等效果只触发一次
 
-    Rect getBounds() const noexcept; //返回当前叶片的碰撞箱，用于踩踏判定
-    Rect getStemBounds() const noexcept; //返回茎部的碰撞箱，用于抓取判定
-
 private:
     LeafType type;
     float xPosition;
@@ -54,7 +51,10 @@ private:
 
     LeafEffect onPlayerLanded() noexcept; //当玩家踩中这片叶子时，GameModel 调用此方法
     void moveHorizontal(float distance) noexcept;
+    Rect getBounds() const noexcept; //返回当前叶片的碰撞箱，用于踩踏判定
+    Rect getStemBounds() const noexcept; //返回茎部的碰撞箱，用于抓取判定
 
+    friend class CollisionDetector;
     friend class GameModel;
     friend class LeafManager;
 };

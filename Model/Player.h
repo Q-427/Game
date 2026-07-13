@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Common/MathUtils.h"
-
+class CollisionDetector;
 class GameModel;
+struct Rect;
 
 class Player
 {
@@ -24,8 +24,6 @@ public:
     bool isGrabRequested() const noexcept; //是否在请求抓取
     bool isHanging() const noexcept; //是否抓取成功后悬停
     bool hasGoldenBoost() const noexcept; //是否处在金色叶子触发的快速状态
-
-    Rect getBounds() const noexcept; //获得实时的碰撞箱
 
 private:
     static constexpr float Gravity = 1100.0f; //重力加速度
@@ -58,6 +56,8 @@ private:
     void activateGoldenBoost(float duration) noexcept;
     void moveHorizontal(float distance) noexcept;
     void constrainX(float minimum, float maximum) noexcept; //将玩家坐标约束在合法范围内，防止超出屏幕边界
+    Rect getBounds() const noexcept; //获得实时的碰撞箱
 
+    friend class CollisionDetector;
     friend class GameModel;
 };
