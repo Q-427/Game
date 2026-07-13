@@ -1,4 +1,5 @@
 #include "Leaf.h"
+#include "MathUtils.h"
 
 Leaf::Leaf(LeafType initialType,float initialX,float initialY) noexcept: type(initialType),xPosition(initialX),yPosition(initialY){}
 

@@ -1,4 +1,5 @@
 #include "CollisionDetector.h"
+#include "MathUtils.h"
 
 bool CollisionDetector::isLanding(const Player& player,const Leaf& leaf) const noexcept
 {
