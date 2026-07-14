@@ -2,15 +2,14 @@
 
 #include <SFML/Graphics.hpp>
 
-class GameViewModel;
-struct LeafViewData;
+#include "../Common/GameRenderData.h"
 
 class GameRenderer
 {
 public:
     GameRenderer();
     bool initialize();
-    void render(sf::RenderWindow& window, const GameViewModel& viewModel, float deltaTime);
+    void render(sf::RenderWindow& window, const GameRenderData& renderData, float deltaTime);
 
 private:
     void updateBackgroundScroll(float deltaTime);
@@ -24,11 +23,11 @@ private:
         float yOffset,
         float scrollFactor,
         sf::Color tint = sf::Color::White) const;
-    void drawLeaves(sf::RenderWindow& window, const GameViewModel& viewModel) const;
-    void drawLeafShape(sf::RenderWindow& window, const LeafViewData& leaf) const;
-    void drawLeafVeins(sf::RenderWindow& window, const LeafViewData& leaf, sf::Color veinColor) const;
-    void drawGoldenGlow(sf::RenderWindow& window, const LeafViewData& leaf) const;
-    void drawPlayer(sf::RenderWindow& window, const GameViewModel& viewModel) const;
+    void drawLeaves(sf::RenderWindow& window, const GameRenderData& renderData) const;
+    void drawLeafShape(sf::RenderWindow& window, const LeafRenderData& leaf) const;
+    void drawLeafVeins(sf::RenderWindow& window, const LeafRenderData& leaf, sf::Color veinColor) const;
+    void drawGoldenGlow(sf::RenderWindow& window, const LeafRenderData& leaf) const;
+    void drawPlayer(sf::RenderWindow& window, const GameRenderData& renderData) const;
 
 private:
     sf::Color m_skyTopColor;

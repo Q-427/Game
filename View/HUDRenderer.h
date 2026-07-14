@@ -2,18 +2,18 @@
 
 #include <SFML/Graphics.hpp>
 
-class GameViewModel;
+#include "../Common/GameRenderData.h"
 
 class HUDRenderer
 {
 public:
     HUDRenderer();
     bool initialize();
-    void render(sf::RenderWindow& window, const GameViewModel& viewModel);
+    void render(sf::RenderWindow& window, const GameRenderData& renderData);
 
 private:
-    void drawScore(sf::RenderWindow& window, const GameViewModel& viewModel);
-    void drawGameOver(sf::RenderWindow& window, const GameViewModel& viewModel);
+    void drawScore(sf::RenderWindow& window, const GameRenderData& renderData);
+    void drawGameOver(sf::RenderWindow& window, const GameRenderData& renderData);
     void drawHint(sf::RenderWindow& window) const;
 
 private:

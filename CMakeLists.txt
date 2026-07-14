@@ -19,8 +19,10 @@ add_executable(WindLeafRunner
     Model/LeafManager.cpp
     Model/Player.cpp
     ViewModel/GameViewModel.cpp
+    ViewModel/Commands/Commands.cpp
     View/InputHandler.cpp
     View/GameRenderer.cpp
+    View/GameWindow.cpp
     View/HUDRenderer.cpp
 )
 

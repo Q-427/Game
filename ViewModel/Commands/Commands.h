@@ -1,108 +1,75 @@
 #pragma once
-#include "../Common/ICommand.h"
-#include "../ViewModel/GameViewModel.h"
 
-// 跳跃命令
+#include "../../Common/ICommand.h"
+
+class GameViewModel;
+
 class JumpCommand : public ICommand
 {
-private:
-  GameViewModel *_vm;
-
 public:
-  JumpCommand(GameViewModel *vm) : _vm(vm) {}
-  void execute() override
-  {
-    if (_vm && !_vm->isGameOver())
-      _vm->jump();
-  }
+    explicit JumpCommand(GameViewModel* vm) noexcept;
+    void execute() override;
+
+private:
+    GameViewModel* m_vm;
 };
 
-// 左移命令
 class MoveLeftCommand : public ICommand
 {
-private:
-  GameViewModel *_vm;
-
 public:
-  MoveLeftCommand(GameViewModel *vm) : _vm(vm) {}
-  void execute() override
-  {
-    if (_vm && !_vm->isGameOver())
-      _vm->moveLeft();
-  }
+    explicit MoveLeftCommand(GameViewModel* vm) noexcept;
+    void execute() override;
+
+private:
+    GameViewModel* m_vm;
 };
 
-// 右移命令
 class MoveRightCommand : public ICommand
 {
-private:
-  GameViewModel *_vm;
-
 public:
-  MoveRightCommand(GameViewModel *vm) : _vm(vm) {}
-  void execute() override
-  {
-    if (_vm && !_vm->isGameOver())
-      _vm->moveRight();
-  }
+    explicit MoveRightCommand(GameViewModel* vm) noexcept;
+    void execute() override;
+
+private:
+    GameViewModel* m_vm;
 };
 
-// 【新增】停止水平移动命令 (用于方向键弹起)
 class StopHorizontalCommand : public ICommand
 {
-private:
-  GameViewModel *_vm;
-
 public:
-  StopHorizontalCommand(GameViewModel *vm) : _vm(vm) {}
-  void execute() override
-  {
-    if (_vm && !_vm->isGameOver())
-      _vm->stopHorizontal();
-  }
+    explicit StopHorizontalCommand(GameViewModel* vm) noexcept;
+    void execute() override;
+
+private:
+    GameViewModel* m_vm;
 };
 
-// 【新增】开始抓取命令 (用于 Z 键按下)
 class StartGrabCommand : public ICommand
 {
-private:
-  GameViewModel *_vm;
-
 public:
-  StartGrabCommand(GameViewModel *vm) : _vm(vm) {}
-  void execute() override
-  {
-    if (_vm && !_vm->isGameOver())
-      _vm->startGrab();
-  }
+    explicit StartGrabCommand(GameViewModel* vm) noexcept;
+    void execute() override;
+
+private:
+    GameViewModel* m_vm;
 };
 
-// 【新增】停止抓取命令 (用于 Z 键弹起)
 class StopGrabCommand : public ICommand
 {
-private:
-  GameViewModel *_vm;
-
 public:
-  StopGrabCommand(GameViewModel *vm) : _vm(vm) {}
-  void execute() override
-  {
-    if (_vm && !_vm->isGameOver())
-      _vm->stopGrab();
-  }
+    explicit StopGrabCommand(GameViewModel* vm) noexcept;
+    void execute() override;
+
+private:
+    GameViewModel* m_vm;
 };
 
-// 【新增】重新开始命令 (用于 R 键)
 class RestartCommand : public ICommand
 {
-private:
-  GameViewModel *_vm;
-
 public:
-  RestartCommand(GameViewModel *vm) : _vm(vm) {}
-  void execute() override
-  {
-    if (_vm)
-      _vm->restart();
-  }
+    explicit RestartCommand(GameViewModel* vm) noexcept;
+    void execute() override;
+
+private:
+    GameViewModel* m_vm;
 };

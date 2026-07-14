@@ -4,54 +4,37 @@
 
 GameApplication::GameApplication()
     : m_viewModel(static_cast<float>(WindowWidth), static_cast<float>(WindowHeight))
-    , m_jumpCommand(&m_viewModel)
-    , m_moveLeftCommand(&m_viewModel)
-    , m_moveRightCommand(&m_viewModel)
-    , m_stopHorizontalCommand(&m_viewModel)
-    , m_startGrabCommand(&m_viewModel)
-    , m_stopGrabCommand(&m_viewModel)
-    , m_restartCommand(&m_viewModel)
-    , m_window()
     , m_frameClock()
-    , m_gameRenderer()
-    , m_hudRenderer()
-    , m_inputHandler(
-          m_jumpCommand,
-          m_moveLeftCommand,
-          m_moveRightCommand,
-          m_stopHorizontalCommand,
-          m_startGrabCommand,
-          m_stopGrabCommand,
-          m_restartCommand)
-    , m_isRunning(true)
-    , m_windowTitle("Wind Leaf Runner")
+    , m_gameWindow(WindowWidth, WindowHeight, "Wind Leaf Runner")
+    , m_viewModelSubscriptionId(0)
 {
+    bindView();
+    bindViewModel();
+}
+
+GameApplication::~GameApplication()
+{
+    if (m_viewModelSubscriptionId != 0)
+    {
+        m_viewModel.unsubscribe(m_viewModelSubscriptionId);
+    }
 }
 
 int GameApplication::run()
 {
-    m_window.create(
-        sf::VideoMode({WindowWidth, WindowHeight}),
-        m_windowTitle,
-        sf::Style::Titlebar | sf::Style::Close);
-
-    m_window.setFramerateLimit(60);
-
-    if (!m_gameRenderer.initialize())
-    {
-        return 1;
-    }
-
-    if (!m_hudRenderer.initialize())
+    if (!m_gameWindow.initialize())
     {
         return 1;
     }
 
     m_frameClock.restart();
 
-    while (m_window.isOpen() && m_isRunning)
+    while (m_gameWindow.isOpen())
     {
-        processEvents();
+        if (!m_gameWindow.processEvents())
+        {
+            break;
+        }
 
         const float deltaTime = std::min(m_frameClock.restart().asSeconds(), 1.0f / 30.0f);
         if (shouldUpdateGame())
@@ -59,24 +42,10 @@ int GameApplication::run()
             update(deltaTime);
         }
 
-        render(deltaTime);
+        m_gameWindow.render(deltaTime);
     }
 
     return 0;
-}
-
-void GameApplication::processEvents()
-{
-    while (const std::optional event = m_window.pollEvent())
-    {
-        const bool shouldContinue = m_inputHandler.handleEvent(*event);
-        if (!shouldContinue)
-        {
-            m_isRunning = false;
-            m_window.close();
-            return;
-        }
-    }
 }
 
 void GameApplication::update(float deltaTime)
@@ -84,15 +53,24 @@ void GameApplication::update(float deltaTime)
     m_viewModel.update(deltaTime);
 }
 
-void GameApplication::render(float deltaTime)
-{
-    m_window.clear(sf::Color(135, 206, 235));
-    m_gameRenderer.render(m_window, m_viewModel, deltaTime);
-    m_hudRenderer.render(m_window, m_viewModel);
-    m_window.display();
-}
-
 bool GameApplication::shouldUpdateGame() const
 {
-    return !m_viewModel.isGameOver();
+    return !m_viewModel.getRenderData().gameOver;
+}
+
+void GameApplication::bindView()
+{
+    m_gameWindow.setRenderData(m_viewModel.getRenderDataPtr());
+    m_gameWindow.setJumpCommand(m_viewModel.getJumpCommand());
+    m_gameWindow.setMoveLeftCommand(m_viewModel.getMoveLeftCommand());
+    m_gameWindow.setMoveRightCommand(m_viewModel.getMoveRightCommand());
+    m_gameWindow.setStopHorizontalCommand(m_viewModel.getStopHorizontalCommand());
+    m_gameWindow.setStartGrabCommand(m_viewModel.getStartGrabCommand());
+    m_gameWindow.setStopGrabCommand(m_viewModel.getStopGrabCommand());
+    m_gameWindow.setRestartCommand(m_viewModel.getRestartCommand());
+}
+
+void GameApplication::bindViewModel()
+{
+    m_viewModelSubscriptionId = m_viewModel.subscribe(m_gameWindow.getNotificationHandler());
 }
