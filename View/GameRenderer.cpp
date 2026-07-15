@@ -8,7 +8,20 @@
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
 
-#include "../ViewModel/GameViewModel.h"
+#include "../Common/GameRenderData.h"
+
+namespace
+{
+bool isDarkLeaf(LeafType type) noexcept
+{
+    return type == LeafType::Dark;
+}
+
+bool isGoldenLeaf(LeafType type) noexcept
+{
+    return type == LeafType::Golden;
+}
+}
 
 GameRenderer::GameRenderer()
     : m_skyTopColor(146, 214, 255), m_skyBottomColor(247, 237, 197), m_groundColor(88, 132, 84), m_hillBackColor(165, 204, 170), m_hillFrontColor(119, 164, 114), m_canopyColor(63, 109, 68), m_playerBodyColor(234, 155, 128), m_playerScarfColor(230, 90, 72), m_playerHeadColor(255, 227, 198), m_hasLayeredBackground(false), m_hasPlayerTextures(false), m_hasLeafTextures(false), m_backgroundScroll(0.0f), m_backgroundBaseSpeed(45.0f), m_groundHeight(80.0f), m_playerDrawWidth(60.0f), m_playerDrawHeight(70.0f), m_playerClimbScale(1.16f), m_leafDrawSize(148.0f)
@@ -52,12 +65,12 @@ bool GameRenderer::initialize()
     return true;
 }
 
-void GameRenderer::render(sf::RenderWindow &window, const GameViewModel &viewModel, float deltaTime)
+void GameRenderer::render(sf::RenderWindow &window, const GameRenderData &renderData, float deltaTime)
 {
     updateBackgroundScroll(deltaTime);
     drawBackground(window);
-    drawLeaves(window, viewModel);
-    drawPlayer(window, viewModel);
+    drawLeaves(window, renderData);
+    drawPlayer(window, renderData);
 }
 
 void GameRenderer::updateBackgroundScroll(float deltaTime)
@@ -192,26 +205,24 @@ void GameRenderer::drawGround(sf::RenderWindow &window) const
     }
 }
 
-void GameRenderer::drawLeaves(sf::RenderWindow &window, const GameViewModel &viewModel) const
+void GameRenderer::drawLeaves(sf::RenderWindow &window, const GameRenderData &renderData) const
 {
-    const auto &leaves = viewModel.getLeaves();
-
-    for (const auto &leaf : leaves)
+    for (const auto &leaf : renderData.leaves)
     {
         drawLeafShape(window, leaf);
     }
 }
 
-void GameRenderer::drawLeafShape(sf::RenderWindow &window, const LeafViewData &leaf) const
+void GameRenderer::drawLeafShape(sf::RenderWindow &window, const LeafRenderData &leaf) const
 {
     if (m_hasLeafTextures)
     {
         const sf::Texture *texture = &m_leafNormalTexture;
-        if (leaf.type == LeafViewType::Dark)
+        if (isDarkLeaf(leaf.type))
         {
             texture = &m_leafDarkTexture;
         }
-        else if (leaf.type == LeafViewType::Golden)
+        else if (isGoldenLeaf(leaf.type))
         {
             texture = &m_leafGoldenTexture;
         }
@@ -224,7 +235,7 @@ void GameRenderer::drawLeafShape(sf::RenderWindow &window, const LeafViewData &l
             constexpr int cropWidth = 1224;
             constexpr int cropHeight = 1364;
 
-            if (leaf.type == LeafViewType::Golden)
+            if (isGoldenLeaf(leaf.type))
             {
                 drawGoldenGlow(window, leaf);
             }
@@ -243,12 +254,12 @@ void GameRenderer::drawLeafShape(sf::RenderWindow &window, const LeafViewData &l
             sprite.setPosition(sf::Vector2f(drawX, drawY));
             sf::Color tint(188, 200, 168, 228);
             sf::Color edgeTint(156, 170, 140, 78);
-            if (leaf.type == LeafViewType::Dark)
+            if (isDarkLeaf(leaf.type))
             {
                 tint = sf::Color(154, 166, 146, 222);
                 edgeTint = sf::Color(128, 140, 123, 74);
             }
-            else if (leaf.type == LeafViewType::Golden)
+            else if (isGoldenLeaf(leaf.type))
             {
                 tint = sf::Color(198, 186, 146, 226);
                 edgeTint = sf::Color(168, 154, 112, 80);
@@ -277,7 +288,7 @@ void GameRenderer::drawLeafShape(sf::RenderWindow &window, const LeafViewData &l
     const float horizontalOffset = width * 0.16f;
     const float verticalOffset = height * 0.32f;
 
-    if (leaf.type == LeafViewType::Golden)
+    if (isGoldenLeaf(leaf.type))
     {
         drawGoldenGlow(window, leaf);
     }
@@ -286,13 +297,13 @@ void GameRenderer::drawLeafShape(sf::RenderWindow &window, const LeafViewData &l
     sf::Color outline(45, 110, 56);
     sf::Color vein(209, 247, 186);
 
-    if (leaf.type == LeafViewType::Dark)
+    if (isDarkLeaf(leaf.type))
     {
         fill = sf::Color(62, 83, 79);
         outline = sf::Color(36, 52, 48);
         vein = sf::Color(160, 181, 170);
     }
-    else if (leaf.type == LeafViewType::Golden)
+    else if (isGoldenLeaf(leaf.type))
     {
         fill = sf::Color(232, 197, 73);
         outline = sf::Color(165, 124, 38);
@@ -339,7 +350,7 @@ void GameRenderer::drawLeafShape(sf::RenderWindow &window, const LeafViewData &l
 
     drawLeafVeins(window, leaf, vein);
 
-    if (leaf.type == LeafViewType::Dark && leaf.breaking)
+    if (isDarkLeaf(leaf.type) && leaf.breaking)
     {
         std::array<sf::RectangleShape, 3> cracks = {
             sf::RectangleShape(sf::Vector2f(width * 0.12f, 2.0f)),
@@ -361,7 +372,7 @@ void GameRenderer::drawLeafShape(sf::RenderWindow &window, const LeafViewData &l
     }
 }
 
-void GameRenderer::drawLeafVeins(sf::RenderWindow &window, const LeafViewData &leaf, sf::Color veinColor) const
+void GameRenderer::drawLeafVeins(sf::RenderWindow &window, const LeafRenderData &leaf, sf::Color veinColor) const
 {
     const float width = leaf.width;
     const float height = leaf.height;
@@ -384,7 +395,7 @@ void GameRenderer::drawLeafVeins(sf::RenderWindow &window, const LeafViewData &l
     }
 }
 
-void GameRenderer::drawGoldenGlow(sf::RenderWindow &window, const LeafViewData &leaf) const
+void GameRenderer::drawGoldenGlow(sf::RenderWindow &window, const LeafRenderData &leaf) const
 {
     const sf::Vector2f center(leaf.x + leaf.width * 0.52f, leaf.y + leaf.height * 0.48f);
 
@@ -411,9 +422,9 @@ void GameRenderer::drawGoldenGlow(sf::RenderWindow &window, const LeafViewData &
     }
 }
 
-void GameRenderer::drawPlayer(sf::RenderWindow &window, const GameViewModel &viewModel) const
+void GameRenderer::drawPlayer(sf::RenderWindow &window, const GameRenderData &renderData) const
 {
-    const sf::Vector2f center(viewModel.getPlayerCenterX(), viewModel.getPlayerCenterY());
+    const sf::Vector2f center(renderData.player.centerX, renderData.player.centerY);
 
     if (m_hasPlayerTextures)
     {
@@ -424,7 +435,7 @@ void GameRenderer::drawPlayer(sf::RenderWindow &window, const GameViewModel &vie
         const bool hasClimbTexture =
             m_playerClimbTexture.getSize().x > 0 && m_playerClimbTexture.getSize().y > 0;
 
-        if (viewModel.isPlayerClimbing() && hasClimbTexture)
+        if (renderData.player.climbing && hasClimbTexture)
         {
             texture = &m_playerClimbTexture;
             useClimbTexture = true;

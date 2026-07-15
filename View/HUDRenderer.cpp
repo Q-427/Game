@@ -4,8 +4,6 @@
 #include <filesystem>
 #include <string>
 
-#include "../ViewModel/GameViewModel.h"
-
 HUDRenderer::HUDRenderer()
     : m_isFontLoaded(false)
     , m_scoreFontSize(24)
@@ -34,18 +32,18 @@ bool HUDRenderer::initialize()
     return true;
 }
 
-void HUDRenderer::render(sf::RenderWindow& window, const GameViewModel& viewModel)
+void HUDRenderer::render(sf::RenderWindow& window, const GameRenderData& renderData)
 {
-    drawScore(window, viewModel);
+    drawScore(window, renderData);
     drawHint(window);
 
-    if (viewModel.isGameOver())
+    if (renderData.gameOver)
     {
-        drawGameOver(window, viewModel);
+        drawGameOver(window, renderData);
     }
 }
 
-void HUDRenderer::drawScore(sf::RenderWindow& window, const GameViewModel& viewModel)
+void HUDRenderer::drawScore(sf::RenderWindow& window, const GameRenderData& renderData)
 {
     sf::RectangleShape scorePanel(sf::Vector2f(168.0f, 44.0f));
     scorePanel.setPosition(sf::Vector2f(16.0f, 16.0f));
@@ -62,14 +60,14 @@ void HUDRenderer::drawScore(sf::RenderWindow& window, const GameViewModel& viewM
     sf::Text scoreText(m_font);
     scoreText.setCharacterSize(m_scoreFontSize);
     scoreText.setFillColor(sf::Color(55, 72, 50));
-    scoreText.setString("Score: " + std::to_string(viewModel.getScore()));
+    scoreText.setString("Score: " + std::to_string(renderData.score));
     scoreText.setPosition(sf::Vector2f(28.0f, 22.0f));
     window.draw(scoreText);
 }
 
-void HUDRenderer::drawGameOver(sf::RenderWindow& window, const GameViewModel& viewModel)
+void HUDRenderer::drawGameOver(sf::RenderWindow& window, const GameRenderData& renderData)
 {
-    if (!viewModel.isGameOver())
+    if (!renderData.gameOver)
     {
         return;
     }

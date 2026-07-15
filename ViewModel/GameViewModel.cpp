@@ -2,103 +2,152 @@
 
 GameViewModel::GameViewModel(float screenWidth, float screenHeight)
     : _model(screenWidth, screenHeight)
+    , m_jumpCommand(this)
+    , m_moveLeftCommand(this)
+    , m_moveRightCommand(this)
+    , m_stopHorizontalCommand(this)
+    , m_startGrabCommand(this)
+    , m_stopGrabCommand(this)
+    , m_restartCommand(this)
+    , m_tickCommand(this, FixedDeltaTime)
 {
+    rebuildRenderData();
 }
 
-// --- Getter 实现 (数据转换) ---
-float GameViewModel::getPlayerCenterX() const
+const GameRenderData& GameViewModel::getRenderData() const
 {
-  // 将 Model 的左上角坐标转换成 Renderer 使用的中心坐标
-  return _model.getPlayer().getX() + Player::CollisionWidth * 0.5f;
+    return _renderData;
 }
 
-float GameViewModel::getPlayerCenterY() const
+const GameRenderData* GameViewModel::getRenderDataPtr() const noexcept
 {
-  // 将 Model 的左上角坐标转换成 Renderer 使用的中心坐标
-  return _model.getPlayer().getY() + Player::CollisionHeight * 0.5f;
+    return &_renderData;
 }
 
-const std::vector<LeafViewData> &GameViewModel::getLeaves() const
+bool GameViewModel::isGameOver() const
 {
-  return _leafViews;
+    return _model.isGameOver();
 }
 
-int GameViewModel::getScore() const { return _model.getScore(); }
-bool GameViewModel::isGameOver() const { return _model.isGameOver(); }
-bool GameViewModel::isPlayerClimbing() const { return _model.getPlayer().isHanging(); }
+ICommand* GameViewModel::getJumpCommand() noexcept
+{
+    return &m_jumpCommand;
+}
 
-// --- 核心逻辑驱动 ---
+ICommand* GameViewModel::getMoveLeftCommand() noexcept
+{
+    return &m_moveLeftCommand;
+}
+
+ICommand* GameViewModel::getMoveRightCommand() noexcept
+{
+    return &m_moveRightCommand;
+}
+
+ICommand* GameViewModel::getStopHorizontalCommand() noexcept
+{
+    return &m_stopHorizontalCommand;
+}
+
+ICommand* GameViewModel::getStartGrabCommand() noexcept
+{
+    return &m_startGrabCommand;
+}
+
+ICommand* GameViewModel::getStopGrabCommand() noexcept
+{
+    return &m_stopGrabCommand;
+}
+
+ICommand* GameViewModel::getRestartCommand() noexcept
+{
+    return &m_restartCommand;
+}
+
+ICommand* GameViewModel::getTickCommand() noexcept
+{
+    return &m_tickCommand;
+}
+
 void GameViewModel::update(float dt)
 {
-  if (_model.isGameOver())
-    return;
-
-  // 1. 全权委托 GameModel 进行业务更新
-  _model.update(dt);
-
-  // 2. 将 Model 事件转换成属性通知
-  auto events = _model.takeEvents();
-  for (const auto &ev : events)
-  {
-    switch (ev.type)
+    if (_model.isGameOver())
     {
-    case GameEventType::ScoreChanged:
-      notifyPropertyChanged("Score");
-      break;
-    case GameEventType::GameOver:
-      notifyPropertyChanged("GameOver");
-      break;
-    case GameEventType::GoldenBoostStarted:
-      notifyPropertyChanged("GoldenAssist");
-      break;
-    case GameEventType::DarkLeafTriggered:
-      notifyPropertyChanged("DarkLeafTriggered");
-      break;
-    }
-  }
-
-  // 3. 重建 LeafViewData 列表，隔离 Model 的 Leaf 结构
-  _leafViews.clear();
-  for (const auto &leaf : _model.getLeaves())
-  {
-    LeafViewData vd;
-
-    // 【修正】根据真实的 LeafType 枚举进行映射
-    switch (leaf.getType())
-    {
-    case LeafType::Dark:
-      vd.type = LeafViewType::Dark;
-      break;
-    case LeafType::Golden:
-      vd.type = LeafViewType::Golden;
-      break;
-    default:
-      vd.type = LeafViewType::Normal;
-      break;
+        return;
     }
 
-    vd.x = leaf.getX();
-    vd.y = leaf.getY();
+    _model.update(dt);
 
-    // 【修正】真实代码中尺寸是静态常量，不是实例方法
-    vd.width = Leaf::CollisionWidth;
-    vd.height = Leaf::CollisionHeight;
+    // Clear transient model events after the model update completes.
+    _model.takeEvents();
 
-    vd.breaking = leaf.isBreaking();
-
-    _leafViews.push_back(vd);
-  }
-
-  // 4. 通知渲染层更新位置
-  notifyPropertyChanged("PlayerPosition");
-  notifyPropertyChanged("Leaves");
+    rebuildRenderData();
+    notifyPropertyChanged("RenderData");
 }
 
-// --- 给 Command 调用的行为 (委托给 Model) ---
-void GameViewModel::jump() { _model.jump(); }
-void GameViewModel::moveLeft() { _model.moveLeft(); }
-void GameViewModel::moveRight() { _model.moveRight(); }
-void GameViewModel::stopHorizontal() { _model.stopMoving(); }
-void GameViewModel::startGrab() { _model.setGrabRequested(true); }
-void GameViewModel::stopGrab() { _model.setGrabRequested(false); }
-void GameViewModel::restart() { _model.reset(); }
+void GameViewModel::jump()
+{
+    _model.jump();
+}
+
+void GameViewModel::moveLeft()
+{
+    _model.moveLeft();
+}
+
+void GameViewModel::moveRight()
+{
+    _model.moveRight();
+}
+
+void GameViewModel::stopHorizontal()
+{
+    _model.stopMoving();
+}
+
+void GameViewModel::startGrab()
+{
+    _model.setGrabRequested(true);
+}
+
+void GameViewModel::stopGrab()
+{
+    _model.setGrabRequested(false);
+}
+
+void GameViewModel::restart()
+{
+    _model.reset();
+    _model.takeEvents();
+    rebuildRenderData();
+    notifyPropertyChanged("RenderData");
+}
+
+void GameViewModel::rebuildRenderData()
+{
+    const auto& player = _model.getPlayer();
+
+    _renderData.player.centerX = player.getX() + Player::CollisionWidth * 0.5f;
+    _renderData.player.centerY = player.getY() + Player::CollisionHeight * 0.5f;
+    _renderData.player.climbing = player.isHanging();
+
+    _renderData.score = _model.getScore();
+    _renderData.gameOver = _model.isGameOver();
+
+    _renderData.leaves.clear();
+    _renderData.leaves.reserve(_model.getLeaves().size());
+
+    for (const auto& leaf : _model.getLeaves())
+    {
+        LeafRenderData viewData{};
+
+        viewData.type = leaf.getType();
+        viewData.x = leaf.getX();
+        viewData.y = leaf.getY();
+        viewData.width = Leaf::CollisionWidth;
+        viewData.height = Leaf::CollisionHeight;
+        viewData.breaking = leaf.isBreaking();
+
+        _renderData.leaves.push_back(viewData);
+    }
+}
