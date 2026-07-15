@@ -41,7 +41,7 @@ private:
     static constexpr float InitialPlayerX = 140.0f;
     static constexpr float InitialPlatformX = 100.0f;
     static constexpr float InitialPlatformBottomMargin = 150.0f;
-    static constexpr float MinimumLeafY = 180.0f;
+    static constexpr float MinimumLeafY = 130.0f;
     static constexpr float MaximumLeafBottomMargin =110.0f;
     static constexpr float LeafScrollSpeed = 200.0f;
     static constexpr float GoldenEffectDuration = 1.0f;
