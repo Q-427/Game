@@ -16,6 +16,7 @@ void GameModel::update(float dt)
 {
     if (gameOver || dt <= 0.0f)
         return;
+
     player.update(dt);
     leafManager.update(dt);
     resolveLeafInteractions(dt);
@@ -24,13 +25,34 @@ void GameModel::update(float dt)
 
     if (player.getY() > screenHeight)
         endGame();//玩家掉出屏幕底部，游戏结束
+
+    notifyPropertyChanged(GameModelProperty::PlayerState);
+    notifyPropertyChanged(GameModelProperty::Leaves);
 }
 
 void GameModel::reset()
 {
-    const float width = screenWidth;
-    const float height = screenHeight;
-    *this = GameModel(width, height);
+    player = Player(InitialPlayerX,0.0f);
+    leafManager = LeafManager(
+        screenWidth,
+        LeafScrollSpeed,
+        InitialPlatformX,
+        screenHeight - InitialPlatformBottomMargin,
+        MinimumLeafY,
+        screenHeight - MaximumLeafBottomMargin);
+    collisionDetector = CollisionDetector{};
+
+    survivalTime = 0.0f;
+    survivalScore = 0;
+    goldenBonusTime = 0.0f;
+    goldenBonusScore = 0;
+    goldenCarryDistanceRemaining = 0.0f;
+    gameOver = false;
+
+    const float initialPlatformY = screenHeight - InitialPlatformBottomMargin;
+    player.landOn(initialPlatformY);
+
+    notifyPropertyChanged(GameModelProperty::Reset);
 }
 
 void GameModel::resolveLeafInteractions(float dt)
@@ -75,13 +97,15 @@ void GameModel::applyLeafEffect(LeafEffect effect)
     switch (effect)
     {
     case LeafEffect::DarkBreakStarted:
-        events.push_back({GameEventType::DarkLeafTriggered,0});
+        notifyPropertyChanged(GameModelProperty::DarkLeaf);
+        notifyPropertyChanged(GameModelProperty::Leaves);
         break;
 
     case LeafEffect::GoldenBoostActivated:
         player.activateGoldenBoost(GoldenEffectDuration);
         goldenCarryDistanceRemaining = GoldenCarryDistance;
-        events.push_back({GameEventType::GoldenBoostStarted,0});
+        notifyPropertyChanged(GameModelProperty::GoldenBoost);
+        notifyPropertyChanged(GameModelProperty::PlayerState);
         break;
 
     case LeafEffect::None:
@@ -114,7 +138,7 @@ void GameModel::updateScore(float dt)
     }
 
     if (getScore() != previousScore)
-        events.push_back({GameEventType::ScoreChanged,getScore()});
+        notifyPropertyChanged(GameModelProperty::Score);
 }
 
 void GameModel::endGame()
@@ -122,7 +146,7 @@ void GameModel::endGame()
     if (gameOver)
         return;
     gameOver = true;
-    events.push_back({GameEventType::GameOver,getScore()});
+    notifyPropertyChanged(GameModelProperty::GameOver);
 }
 
 void GameModel::jump() noexcept
@@ -186,11 +210,4 @@ int GameModel::getScore() const noexcept
 bool GameModel::isGameOver() const noexcept
 {
     return gameOver;
-}
-
-std::vector<GameEvent> GameModel::takeEvents()
-{
-    std::vector<GameEvent> pendingEvents;
-    pendingEvents.swap(events);
-    return pendingEvents;
 }

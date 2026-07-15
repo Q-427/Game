@@ -11,7 +11,21 @@ GameViewModel::GameViewModel(float screenWidth, float screenHeight)
     , m_restartCommand(this)
     , m_tickCommand(this, FixedDeltaTime)
 {
+    modelSubscriptionId = _model.subscribe(
+        [this](const std::string& propertyName)
+        {
+            onModelPropertyChanged(propertyName);
+        });
+
     rebuildRenderData();
+}
+
+GameViewModel::~GameViewModel()
+{
+    if (modelSubscriptionId != 0)
+    {
+        _model.unsubscribe(modelSubscriptionId);
+    }
 }
 
 const GameRenderData& GameViewModel::getRenderData() const
@@ -77,12 +91,6 @@ void GameViewModel::update(float dt)
     }
 
     _model.update(dt);
-
-    // Clear transient model events after the model update completes.
-    _model.takeEvents();
-
-    rebuildRenderData();
-    notifyPropertyChanged("RenderData");
 }
 
 void GameViewModel::jump()
@@ -118,7 +126,11 @@ void GameViewModel::stopGrab()
 void GameViewModel::restart()
 {
     _model.reset();
-    _model.takeEvents();
+}
+
+void GameViewModel::onModelPropertyChanged(const std::string& propertyName)
+{
+    (void)propertyName;
     rebuildRenderData();
     notifyPropertyChanged("RenderData");
 }
