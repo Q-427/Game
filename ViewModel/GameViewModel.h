@@ -9,6 +9,7 @@ class GameViewModel : public INotifyPropertyChanged
 {
 public:
     GameViewModel(float screenWidth = 800.0f, float screenHeight = 600.0f);
+    ~GameViewModel();
 
     const GameRenderData& getRenderData() const;
     const GameRenderData* getRenderDataPtr() const noexcept;
@@ -34,11 +35,13 @@ public:
 
 private:
     void rebuildRenderData();
+    void onModelPropertyChanged(const std::string& propertyName);
 
 private:
     static constexpr float FixedDeltaTime = 1.0f / 60.0f;
 
     GameModel _model;
+    INotifyPropertyChanged::SubscriptionId modelSubscriptionId{0};
     GameRenderData _renderData;
     JumpCommand m_jumpCommand;
     MoveLeftCommand m_moveLeftCommand;

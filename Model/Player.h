@@ -26,11 +26,11 @@ public:
     bool hasGoldenBoost() const noexcept; //是否处在金色叶子触发的快速状态
 
 private:
-    static constexpr float Gravity = 1100.0f; //重力加速度
+    static constexpr float Gravity = 2400.0f; //重力加速度
     static constexpr float MoveSpeed = 190.0f; //普通移动速度
     static constexpr float GoldenMoveSpeed = 320.0f; //碰到金叶子后的速度
-    static constexpr float JumpSpeed = 440.0f; //起跳的初速度
-    static constexpr float MaxFallSpeed = 700.0f; //下落速度上线，防止穿透物体
+    static constexpr float JumpSpeed = 800.0f; //起跳的初速度
+    static constexpr float MaxFallSpeed = 1200.0f; //下落速度上线，防止穿透物体
     static constexpr int MaxJumpCount = 2;
 
     float xPosition;
