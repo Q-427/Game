@@ -53,12 +53,12 @@ void LeafManager::update(float dt)
 void LeafManager::spawnLeaf()
 {
     std::uniform_real_distribution<float> intervalDistribution(1.3f, 2.0f);//生成间隔
-    std::uniform_real_distribution<float> verticalDistribution(-110.0f, 150.0f); //y轴偏移
+    std::uniform_real_distribution<float> verticalDistribution(-180.0f, 120.0f); //y轴偏移
 
     //在上一片叶子 Y 坐标基础上增加随机偏移，然后用clampFloat限制在全局最小/最大范围内
     lastSpawnY = clampFloat(lastSpawnY + verticalDistribution(randomEngine),minimumLeafY,maximumLeafY);
 
-    leaves.emplace_back(createRandomLeafType(),screenWidth + 140.0f,lastSpawnY); //在可视区域右侧外部生成，然后向左滚动进入画面
+    leaves.emplace_back(createRandomLeafType(),screenWidth + 100.0f,lastSpawnY); //在可视区域右侧外部生成，然后向左滚动进入画面
     spawnTimer = intervalDistribution(randomEngine);//重置计时，设定下一次生成的时间间隔（1.3~2.0 秒），形成动态变化
 }
 
