@@ -26,10 +26,11 @@ add_executable(WindLeafRunner
     View/HUDRenderer.cpp
 )
 
-find_package(SFML 3 CONFIG REQUIRED COMPONENTS Graphics Window System)
+find_package(SFML 3 CONFIG REQUIRED COMPONENTS Audio Graphics Window System)
 
 target_link_libraries(WindLeafRunner
     PRIVATE
+        SFML::Audio
         SFML::Graphics
         SFML::Window
         SFML::System

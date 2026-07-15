@@ -1,8 +1,10 @@
 #pragma once
 
 #include <functional>
+#include <filesystem>
 #include <string>
 
+#include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 
 #include "../Common/GameRenderData.h"
@@ -22,6 +24,8 @@ public:
     bool isOpen() const;
     bool processEvents();
     void render(float deltaTime);
+    void playGameplayMusic();
+    void playGameOverMusic();
 
     void setRenderData(const GameRenderData* renderData) noexcept;
 
@@ -36,6 +40,8 @@ public:
     INotifyPropertyChanged::Handler getNotificationHandler();
 
 private:
+    void initializeAudio();
+    bool tryLoadMusic(sf::Music& music, const std::filesystem::path& path, bool shouldLoop);
     void onPropertyChanged(const std::string& propertyName);
 
 private:
@@ -49,4 +55,8 @@ private:
     InputHandler m_inputHandler;
     const GameRenderData* m_renderData{nullptr};
     bool m_hasPendingRenderData{true};
+    sf::Music m_gameplayMusic;
+    sf::Music m_gameOverMusic;
+    bool m_hasGameplayMusic{false};
+    bool m_hasGameOverMusic{false};
 };

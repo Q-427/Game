@@ -42,6 +42,7 @@ int GameApplication::run()
             update(deltaTime);
         }
 
+        syncMusicState();
         m_gameWindow.render(deltaTime);
     }
 
@@ -73,4 +74,25 @@ void GameApplication::bindView()
 void GameApplication::bindViewModel()
 {
     m_viewModelSubscriptionId = m_viewModel.subscribe(m_gameWindow.getNotificationHandler());
+}
+
+void GameApplication::syncMusicState()
+{
+    const bool isGameOver = m_viewModel.getRenderData().gameOver;
+    if (m_hasSyncedMusicState && isGameOver == m_lastGameOverState)
+    {
+        return;
+    }
+
+    if (isGameOver)
+    {
+        m_gameWindow.playGameOverMusic();
+    }
+    else
+    {
+        m_gameWindow.playGameplayMusic();
+    }
+
+    m_lastGameOverState = isGameOver;
+    m_hasSyncedMusicState = true;
 }

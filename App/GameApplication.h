@@ -17,6 +17,7 @@ private:
     bool shouldUpdateGame() const;
     void bindView();
     void bindViewModel();
+    void syncMusicState();
 
 private:
     static constexpr unsigned int WindowWidth = 1280;
@@ -26,4 +27,6 @@ private:
     sf::Clock m_frameClock;
     GameWindow m_gameWindow;
     INotifyPropertyChanged::SubscriptionId m_viewModelSubscriptionId;
+    bool m_lastGameOverState{false};
+    bool m_hasSyncedMusicState{false};
 };

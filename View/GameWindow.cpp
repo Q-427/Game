@@ -2,6 +2,15 @@
 
 #include <cassert>
 
+namespace
+{
+const std::filesystem::path GameplayMusicPath{"assets/audios/game_start.ogg"};
+
+const std::filesystem::path GameOverMusicPath{"assets/audios/game_over.ogg"};
+
+constexpr float MusicVolume = 60.0f;
+}
+
 GameWindow::GameWindow(unsigned int width, unsigned int height, const char* title)
     : m_width(width)
     , m_height(height)
@@ -31,6 +40,8 @@ bool GameWindow::initialize()
     {
         return false;
     }
+
+    initializeAudio();
 
     return true;
 }
@@ -65,6 +76,33 @@ void GameWindow::render(float deltaTime)
     m_window.display();
 
     m_hasPendingRenderData = false;
+}
+
+void GameWindow::playGameplayMusic()
+{
+    m_gameOverMusic.stop();
+
+    if (!m_hasGameplayMusic)
+    {
+        return;
+    }
+
+    if (m_gameplayMusic.getStatus() != sf::SoundSource::Status::Playing)
+    {
+        m_gameplayMusic.play();
+    }
+}
+
+void GameWindow::playGameOverMusic()
+{
+    m_gameplayMusic.stop();
+
+    if (!m_hasGameOverMusic)
+    {
+        return;
+    }
+
+    m_gameOverMusic.play();
 }
 
 void GameWindow::setRenderData(const GameRenderData* renderData) noexcept
@@ -114,6 +152,29 @@ INotifyPropertyChanged::Handler GameWindow::getNotificationHandler()
     {
         onPropertyChanged(propertyName);
     };
+}
+
+void GameWindow::initializeAudio()
+{
+    m_hasGameplayMusic = tryLoadMusic(m_gameplayMusic, GameplayMusicPath, true);
+    m_hasGameOverMusic = tryLoadMusic(m_gameOverMusic, GameOverMusicPath, false);
+}
+
+bool GameWindow::tryLoadMusic(sf::Music& music, const std::filesystem::path& path, bool shouldLoop)
+{
+    if (path.empty())
+    {
+        return false;
+    }
+
+    if (!music.openFromFile(path))
+    {
+        return false;
+    }
+
+    music.setLooping(shouldLoop);
+    music.setVolume(MusicVolume);
+    return true;
 }
 
 void GameWindow::onPropertyChanged(const std::string& propertyName)
