@@ -20,6 +20,7 @@ public:
     ICommand* getStartGrabCommand() noexcept;
     ICommand* getStopGrabCommand() noexcept;
     ICommand* getRestartCommand() noexcept;
+    ICommand* getTickCommand() noexcept;
 
     void update(float dt);
 
@@ -35,6 +36,8 @@ private:
     void rebuildRenderData();
 
 private:
+    static constexpr float FixedDeltaTime = 1.0f / 60.0f;
+
     GameModel _model;
     GameRenderData _renderData;
     JumpCommand m_jumpCommand;
@@ -44,4 +47,5 @@ private:
     StartGrabCommand m_startGrabCommand;
     StopGrabCommand m_stopGrabCommand;
     RestartCommand m_restartCommand;
+    TickCommand m_tickCommand;
 };

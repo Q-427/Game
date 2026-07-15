@@ -92,3 +92,17 @@ void RestartCommand::execute()
         m_vm->restart();
     }
 }
+
+TickCommand::TickCommand(GameViewModel* vm, float fixedDeltaTime) noexcept
+    : m_vm(vm)
+    , m_fixedDeltaTime(fixedDeltaTime)
+{
+}
+
+void TickCommand::execute()
+{
+    if (m_vm && !m_vm->isGameOver())
+    {
+        m_vm->update(m_fixedDeltaTime);
+    }
+}

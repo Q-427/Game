@@ -9,6 +9,7 @@ GameViewModel::GameViewModel(float screenWidth, float screenHeight)
     , m_startGrabCommand(this)
     , m_stopGrabCommand(this)
     , m_restartCommand(this)
+    , m_tickCommand(this, FixedDeltaTime)
 {
     rebuildRenderData();
 }
@@ -61,6 +62,11 @@ ICommand* GameViewModel::getStopGrabCommand() noexcept
 ICommand* GameViewModel::getRestartCommand() noexcept
 {
     return &m_restartCommand;
+}
+
+ICommand* GameViewModel::getTickCommand() noexcept
+{
+    return &m_tickCommand;
 }
 
 void GameViewModel::update(float dt)

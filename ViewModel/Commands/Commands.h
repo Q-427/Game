@@ -73,3 +73,14 @@ public:
 private:
     GameViewModel* m_vm;
 };
+
+class TickCommand : public ICommand
+{
+public:
+    TickCommand(GameViewModel* vm, float fixedDeltaTime) noexcept;
+    void execute() override;
+
+private:
+    GameViewModel* m_vm;
+    float m_fixedDeltaTime;
+};

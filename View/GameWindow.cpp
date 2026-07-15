@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+#include "../Common/ICommand.h"
+
 namespace
 {
 const std::filesystem::path GameplayMusicPath{"assets/audios/game_start.ogg"};
@@ -42,6 +44,12 @@ bool GameWindow::initialize()
     }
 
     initializeAudio();
+    syncAudioState();
+
+    if (m_renderData != nullptr)
+    {
+        render(0.0f);
+    }
 
     return true;
 }
@@ -51,7 +59,7 @@ bool GameWindow::isOpen() const
     return m_window.isOpen();
 }
 
-bool GameWindow::processEvents()
+bool GameWindow::runFrame()
 {
     while (const std::optional event = m_window.pollEvent())
     {
@@ -63,6 +71,14 @@ bool GameWindow::processEvents()
         }
     }
 
+    m_nextRenderDeltaTime = FixedDeltaTime;
+
+    if (m_tickCommand != nullptr)
+    {
+        m_tickCommand->execute();
+    }
+
+    m_nextRenderDeltaTime = 0.0f;
     return true;
 }
 
@@ -74,41 +90,11 @@ void GameWindow::render(float deltaTime)
     m_gameRenderer.render(m_window, *m_renderData, deltaTime);
     m_hudRenderer.render(m_window, *m_renderData);
     m_window.display();
-
-    m_hasPendingRenderData = false;
-}
-
-void GameWindow::playGameplayMusic()
-{
-    m_gameOverMusic.stop();
-
-    if (!m_hasGameplayMusic)
-    {
-        return;
-    }
-
-    if (m_gameplayMusic.getStatus() != sf::SoundSource::Status::Playing)
-    {
-        m_gameplayMusic.play();
-    }
-}
-
-void GameWindow::playGameOverMusic()
-{
-    m_gameplayMusic.stop();
-
-    if (!m_hasGameOverMusic)
-    {
-        return;
-    }
-
-    m_gameOverMusic.play();
 }
 
 void GameWindow::setRenderData(const GameRenderData* renderData) noexcept
 {
     m_renderData = renderData;
-    m_hasPendingRenderData = true;
 }
 
 void GameWindow::setJumpCommand(ICommand* command) noexcept
@@ -146,6 +132,11 @@ void GameWindow::setRestartCommand(ICommand* command) noexcept
     m_inputHandler.setRestartCommand(command);
 }
 
+void GameWindow::setTickCommand(ICommand* command) noexcept
+{
+    m_tickCommand = command;
+}
+
 INotifyPropertyChanged::Handler GameWindow::getNotificationHandler()
 {
     return [this](const std::string& propertyName)
@@ -177,10 +168,48 @@ bool GameWindow::tryLoadMusic(sf::Music& music, const std::filesystem::path& pat
     return true;
 }
 
+void GameWindow::syncAudioState()
+{
+    if (m_renderData == nullptr)
+    {
+        return;
+    }
+
+    const bool isGameOver = m_renderData->gameOver;
+    if (m_hasAudioStateInitialized && isGameOver == m_lastGameOverState)
+    {
+        return;
+    }
+
+    if (isGameOver)
+    {
+        m_gameplayMusic.stop();
+
+        if (m_hasGameOverMusic)
+        {
+            m_gameOverMusic.play();
+        }
+    }
+    else
+    {
+        m_gameOverMusic.stop();
+
+        if (m_hasGameplayMusic &&
+            m_gameplayMusic.getStatus() != sf::SoundSource::Status::Playing)
+        {
+            m_gameplayMusic.play();
+        }
+    }
+
+    m_lastGameOverState = isGameOver;
+    m_hasAudioStateInitialized = true;
+}
+
 void GameWindow::onPropertyChanged(const std::string& propertyName)
 {
     if (propertyName == "RenderData")
     {
-        m_hasPendingRenderData = true;
+        syncAudioState();
+        render(m_nextRenderDeltaTime);
     }
 }
