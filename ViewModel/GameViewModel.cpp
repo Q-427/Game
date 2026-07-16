@@ -1,5 +1,22 @@
 #include "GameViewModel.h"
 
+namespace
+{
+LeafRenderType toLeafRenderType(LeafType type) noexcept
+{
+    switch (type)
+    {
+    case LeafType::Dark:
+        return LeafRenderType::Dark;
+    case LeafType::Golden:
+        return LeafRenderType::Golden;
+    case LeafType::Normal:
+    default:
+        return LeafRenderType::Normal;
+    }
+}
+}
+
 GameViewModel::GameViewModel(float screenWidth, float screenHeight)
     : _model(screenWidth, screenHeight)
     , m_jumpCommand(this)
@@ -153,7 +170,7 @@ void GameViewModel::rebuildRenderData()
     {
         LeafRenderData viewData{};
 
-        viewData.type = leaf.getType();
+        viewData.type = toLeafRenderType(leaf.getType());
         viewData.x = leaf.getX();
         viewData.y = leaf.getY();
         viewData.width = Leaf::CollisionWidth;
