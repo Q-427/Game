@@ -12,14 +12,14 @@
 
 namespace
 {
-bool isDarkLeaf(LeafType type) noexcept
+bool isDarkLeaf(LeafRenderType type) noexcept
 {
-    return type == LeafType::Dark;
+    return type == LeafRenderType::Dark;
 }
 
-bool isGoldenLeaf(LeafType type) noexcept
+bool isGoldenLeaf(LeafRenderType type) noexcept
 {
-    return type == LeafType::Golden;
+    return type == LeafRenderType::Golden;
 }
 }
 

@@ -46,7 +46,7 @@ void LeafManager::update(float dt)
 
     spawnTimer -= dt;
 
-    if (spawnTimer <= 0.0f) //每隔一段时间生成一片随即叶子
+    if (spawnTimer <= 0.0f) //每隔一段时间生成一片随机叶子
         spawnLeaf();
 }
 
